@@ -49,7 +49,7 @@ class MssgWidget extends StatelessWidget {
           isMe
               ? Container()
               : Container(
-                  child: image == null
+                  child: image == null || image == ""
                       ? Container(
                           height: 50,
                           width: 50,

@@ -65,11 +65,20 @@ userController.connection.connect((err) => {
                 };
                 messageController.insertMssgDB(mssg).then((result) => {
                     io.emit("receive_message", result);
-                    console.log("message sent");
+                    //console.log("message sent");
                 }).catch((err) => {
                     console.log(err);
                 });
-                sendMessageToDevice(data.deviceToken, "new Message here", "message body here");
+                let deviceToken;
+                userController.getDeviceToken(data.receiver_id).then((res) => {
+                    deviceToken = res;
+                    //console.log("device token " + deviceToken);
+                    sendMessageToDevice(deviceToken, data.senderUsername, data.message_content);
+
+                }).catch((err) => {
+                    console.log(err);
+                });
+
             });
         });
 
@@ -87,11 +96,10 @@ const sendMessageToDevice = (deviceToken, title, body) => {
 
     messaging.send(message)
         .then((response) => {
-            console.log('Notification sent successfully:', response);
+            //console.log('Notification sent successfully:', response);
         })
         .catch((error) => {
             console.error('Error sending notification:', error);
-            console.log('herreee');
         });
 };
 

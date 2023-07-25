@@ -5,6 +5,7 @@ class UserModel {
   String? phone;
   String? registration_date;
   String? img;
+  String? password;
 
   UserModel(
       {required this.user_id,
@@ -12,5 +13,6 @@ class UserModel {
       required this.email,
       this.phone,
       this.registration_date,
-      this.img});
+      this.img,
+      this.password});
 }

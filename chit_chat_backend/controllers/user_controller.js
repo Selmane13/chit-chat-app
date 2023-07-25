@@ -7,7 +7,6 @@ const JWTKey = process.env.JWT_SECRET_KEY;
 
 
 
-
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -49,6 +48,7 @@ const verifyJwt = (req, res, next) => {
 
 const createUser = (req, res) => {
     let insertData = req.body;
+
     checkUserExists(insertData.email)
         .then((userExists) => {
             if (!userExists) {
@@ -80,31 +80,41 @@ const createUser = (req, res) => {
         });
 };
 
-const login = (req, ress) => {
+const login = (req, res) => {
     const data = req.body;
     const query = "SELECT * FROM Users WHERE email = ?";
-    connection.query(query, [data.email], (err, res) => {
+    connection.query(query, [data.email], (err, result) => {
         if (err) {
             console.log(err);
         } else {
-            if (res.length === 0) {
+            if (result.length === 0) {
                 console.log("wrong credentials")
             } else {
-                const user = res[0];
+                const user = result[0];
                 bcrypt.compare(data.password, user.password, (error, match) => {
                     if (error) {
                         console.log(error);
                     } else if (!match) {
                         console.log("wrong password");
                     } else {
-                        const token = jsonwebtoken.sign({ userId: user.user_id, email: user.email }, JWTKey, { expiresIn: '1h' });
-                        ress.send({
-                            "Authorization": token,
-                            "user_id": res[0].user_id,
-                            "username": res[0].username,
-                            "phone": res[0].phone,
-                            "img": res[0].img
+                        const query2 = 'UPDATE Users SET deviceToken = ? WHERE user_id = ? ';
+                        connection.query(query2, [data.deviceToken, result[0].user_id], (err2, result2) => {
+                            if (err2) {
+                                console.log(err2);
+                            } else {
+                                const token = jsonwebtoken.sign({ userId: user.user_id, email: user.email }, JWTKey, { expiresIn: '1h' });
+                                res.send({
+                                    "Authorization": token,
+                                    "user_id": result[0].user_id,
+                                    "username": result[0].username,
+                                    "phone": result[0].phone,
+                                    "img": result[0].img,
+                                    "password": result[0].password
+                                });
+                            }
                         });
+
+
                     }
                 })
             }
@@ -113,6 +123,20 @@ const login = (req, ress) => {
 
     })
 };
+
+const getDeviceToken = (user_id) => {
+    return new Promise((resolve, reject) => {
+        const query = "SELECT deviceToken FROM Users WHERE user_id = ?";
+        connection.query(query, user_id, (err, result) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result[0].deviceToken);
+            }
+        })
+    })
+
+}
 
 const deleteUser = (req, res) => {
     const user_id = req.body.user_id;
@@ -127,7 +151,6 @@ const deleteUser = (req, res) => {
 };
 
 const updateUsername = (req, res) => {
-    console.log("hnaaaa");
     const username = req.body.username;
     const user_id = req.body.user_id;
     const query = `UPDATE Users SET username = ? WHERE user_id = ?`;
@@ -204,7 +227,7 @@ const searchUsers = (req, res) => {
 
 const getUser = (req, res) => {
     const user_id = req.params.user_id;
-    const query = 'SELECT username,img FROM Users WHERE user_id = ?';
+    const query = 'SELECT username,img,user_id FROM Users WHERE user_id = ?';
     connection.query(query, [user_id], (err, result) => {
         if (err) {
             console.log(err);
@@ -226,5 +249,6 @@ module.exports = {
     updateEmail,
     updatePhone,
     searchUsers,
-    getUser
+    getUser,
+    getDeviceToken
 };

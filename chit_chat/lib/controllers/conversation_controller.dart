@@ -9,12 +9,13 @@ import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:socket_io_client/socket_io_client.dart';
 
+import '../api/notifications.dart';
 import '../models/conversation_model.dart';
 
 class ConversationController extends GetxController {
   final ConversationRepo conversationRepo;
   late IO.Socket socket;
-  //final notificationManaging = Get.find<NotificationManaging();
+  final notificationManager = Get.find<NotificationManager>();
 
   ConversationController({required this.conversationRepo});
 
@@ -29,6 +30,9 @@ class ConversationController extends GetxController {
   set currConversation(int index) {
     _currConversation = index;
   }
+
+  bool _loading = false;
+  bool get loading => _loading;
 
   List<ConversationModel> get conversations => _conversations;
 
@@ -109,10 +113,11 @@ class ConversationController extends GetxController {
   }
 
   void sendMessage(Map<String, dynamic> mssgBody) async {
-    /*if (notificationManaging.deviceToken == null) {
-      notificationManaging.getDeviceToken();
+    if (notificationManager.deviceToken == null) {
+      notificationManager.getDeviceToken();
     }
-    mssgBody.addAll({"deviceToken": notificationManaging.deviceToken});*/
+    mssgBody.addAll(
+        {"senderUsername": Get.find<UserController>().userModel.username});
     socket.emit("send_message", mssgBody);
   }
 
@@ -208,11 +213,13 @@ class ConversationController extends GetxController {
 
   @override
   void onInit() async {
+    _loading = false;
     super.onInit();
     await getAllConversations();
     await getParticipantsOfAllConversation();
     await getMssgsOfParticipants();
     await getOtherParticipants();
+
     socket = IO.io(AppConstants.BASE_URL,
         OptionBuilder().setTransports(['websocket']).setTimeout(5000).build());
     socket.connect();
@@ -224,6 +231,8 @@ class ConversationController extends GetxController {
       await getMssgsOfParticipants();
       update();
     });
+    _loading = true;
+    update();
   }
 
   @override

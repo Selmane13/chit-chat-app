@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:chit_chat/api/notifications.dart';
 import 'package:chit_chat/controllers/conversation_controller.dart';
 import 'package:chit_chat/models/user_model.dart';
 import 'package:chit_chat/repos/user_repo.dart';
 import 'package:chit_chat/utils/app_constants.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
@@ -26,6 +28,9 @@ class UserController extends GetxController {
   List<dynamic> get searchedUsersList => _searchedUsersList;
 
   UserModel get userModel => _userModel!;
+  set setUserModel(UserModel userModel) {
+    _userModel = userModel;
+  }
 
   UserController({required this.userRepo});
 
@@ -34,7 +39,8 @@ class UserController extends GetxController {
       "username": username,
       "password": password,
       "email": email,
-      "phone": ""
+      "phone": "",
+      "deviceToken": Get.find<NotificationManager>().deviceToken!
     };
     Response response = await userRepo.signUp(body);
     if (response.statusCode == 200) {
@@ -56,20 +62,30 @@ class UserController extends GetxController {
     String email,
     String password,
   ) async {
-    Map<String, String> body = {"email": email, "password": password};
+    Map<String, String> body = {
+      "email": email,
+      "password": password,
+      "deviceToken": Get.find<NotificationManager>().deviceToken!
+    };
     Response response = await userRepo.signIn(body);
     if (response.statusCode == 200) {
-      print(response.body);
       _userModel = UserModel(
           user_id: response.body["user_id"].toString(),
           username: response.body["username"],
           email: email,
           phone: response.body["phone"],
-          img: response.body["img"] ?? "");
+          img: response.body["img"] ?? "",
+          password: response.body["password"]);
       userRepo.apiClient.token = response.body["Authorization"];
       userRepo.apiClient.updateHeader(response.body["Authorization"]);
-      await userRepo.sharedPreferences
-          .setString(AppConstants.TOKEN, response.body["Authorization"]);
+      await userRepo.saveUserInfo([
+        _userModel!.user_id,
+        _userModel!.username,
+        _userModel!.email,
+        _userModel!.phone!,
+        _userModel!.img!,
+        _userModel!.password!
+      ]);
       return true;
     } else {
       print("response" + response.statusCode.toString());
@@ -109,6 +125,7 @@ class UserController extends GetxController {
 
   void logout() {
     _userModel = null;
+    userRepo.clearStorage();
   }
 
   Future<void> searchUsers(String username) async {

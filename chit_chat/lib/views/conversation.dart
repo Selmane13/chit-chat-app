@@ -220,7 +220,11 @@ class _ConversationPageState extends State<ConversationPage>
                                             .userModel
                                             .user_id,
                                         "message_content":
-                                            _mssgController.value.text
+                                            _mssgController.value.text,
+                                        "receiver_id": _conversationController
+                                                .otherPartcipant[
+                                            _conversationController
+                                                .currConversation]!["user_id"]
                                       });
                                       _mssgController.clear();
                                     }
@@ -315,7 +319,7 @@ class _ConversationPageState extends State<ConversationPage>
                                         _conversationController.otherPartcipant[
                                             _conversationController
                                                 .currConversation]!["img"]
-                                    : "",
+                                    : null,
                               ),
                             ),
                           ],

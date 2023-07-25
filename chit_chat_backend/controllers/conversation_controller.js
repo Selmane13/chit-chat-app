@@ -78,6 +78,9 @@ const getAllConversations = (req, res) => {
                             results.push(result[0]);
 
                             if (index == conversations.length - 1) {
+                                /*const sortByTimestampDescending = (a, b) => b.timestamp - a.timestamp;
+                                results.sort(sortByTimestampDescending);*/
+
                                 res.status(200).json(results);
                             }
                         }

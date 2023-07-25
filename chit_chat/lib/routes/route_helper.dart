@@ -1,3 +1,4 @@
+import 'package:chit_chat/middleware/auth_middleware.dart';
 import 'package:chit_chat/views/InfoPage.dart';
 import 'package:chit_chat/views/conversation.dart';
 import 'package:chit_chat/views/edit_page.dart';
@@ -22,7 +23,10 @@ class RouteHelper {
   static String getInfoPage() => "$infoPage";
 
   static List<GetPage> getPages = [
-    GetPage(name: signInPage, page: () => SignInPage()),
+    GetPage(
+        name: signInPage,
+        page: () => SignInPage(),
+        middlewares: [AuthMiddleware()]),
     GetPage(name: signUpPage, page: () => SignUpPage()),
     GetPage(name: homePage, page: () => HomePage()),
     GetPage(

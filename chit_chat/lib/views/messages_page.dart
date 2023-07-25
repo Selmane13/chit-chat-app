@@ -27,7 +27,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
   Future<bool> _mockFuture() async {
     // Simulate a time-consuming operation here (5 seconds in this case)
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(Duration(seconds: 3));
     return true;
   }
 
@@ -108,8 +108,7 @@ class _MessagesPageState extends State<MessagesPage> {
                   ),
                   GetBuilder<ConversationController>(
                     builder: (_conversationController) {
-                      return (_conversationController.conversations.isEmpty ||
-                              _conversationController.sortedMessages.isEmpty)
+                      return !_conversationController.loading
                           ? FutureBuilder(
                               future: _mockFuture(),
                               builder: ((context, snapshot) {
@@ -118,7 +117,7 @@ class _MessagesPageState extends State<MessagesPage> {
                                   // While waiting for the Future to complete, show the CircularProgressIndicator
                                   return CircularProgressIndicator();
                                 } else {
-                                  _loadRessources();
+                                  //_loadRessources();
                                   // After the Future completes, show something else
                                   return Expanded(
                                       child: SingleChildScrollView(

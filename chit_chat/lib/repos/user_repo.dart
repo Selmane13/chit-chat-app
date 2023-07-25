@@ -61,4 +61,12 @@ class UserRepo extends GetxService {
     http.StreamedResponse response = await request.send();
     return response;
   }
+
+  Future<void> saveUserInfo(List<String> info) async {
+    await sharedPreferences.setStringList("userInfo", info);
+  }
+
+  Future<void> clearStorage() async {
+    await sharedPreferences.clear();
+  }
 }

@@ -1,3 +1,4 @@
+import 'package:chit_chat/api/notifications.dart';
 import 'package:chit_chat/routes/route_helper.dart';
 import 'package:chit_chat/views/conversation.dart';
 import 'package:chit_chat/views/home_page.dart';
@@ -16,6 +17,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await dep.init();
+  Get.find<NotificationManager>().setupFirebaseMessaging();
+  Get.find<NotificationManager>().initNotifications();
   runApp(const MyApp());
 }
 
