@@ -4,8 +4,8 @@ const userController = require('./user_controller');
 
 const insertConversation = (participants, conversation_name) => {
     return new Promise((resolve, reject) => {
-        const query1 = 'INSERT INTO Conversations (conversation_name,creator_user_id) VALUES (?, ?)';
-        const query2 = 'INSERT INTO Participants (user_id , conversation_id) VALUES (? ,?)';
+        const query1 = 'INSERT INTO conversations (conversation_name,creator_user_id) VALUES (?, ?)';
+        const query2 = 'INSERT INTO participants(user_id , conversation_id) VALUES (? ,?)';
         userController.connection.query(query1, [conversation_name, participants.creator_user_id], (err, result) => {
             if (err) {
                 reject(err);
@@ -51,7 +51,7 @@ const createConversation = (req, res) => {
 
 const getConversation = (req, res) => {
     const conversation_id = req.body.conversation_id;
-    const query = 'SELECT * FROM Conversations WHERE conversation_id =  ?';
+    const query = 'SELECT * FROM conversations WHERE conversation_id =  ?';
     userController.connection.query(query, conversation_id, (err, result) => {
         if (err) {
             console.log(err);
@@ -63,30 +63,36 @@ const getConversation = (req, res) => {
 };
 
 const getAllConversations = (req, res) => {
+
     //userController.verifyJwt()
     getConversationsOfUser(req.params.user_id)
         .then((conversations) => {
+
             let query;
             let results = [];
+            if (conversations.length == 0) {
+                res.send("Conversations empty");
+            }
             if (conversations != null) {
+
                 conversations.forEach((element, index) => {
-                    query = 'SELECT * FROM Conversations WHERE conversation_id = ?';
+                    query = 'SELECT * FROM conversations WHERE conversation_id = ?';
+
                     userController.connection.query(query, element, (err, result) => {
                         if (err) {
+
                             console.log("err in conversation.forEach: " + err);
                         } else {
+
                             results.push(result[0]);
-
                             if (index == conversations.length - 1) {
-                                /*const sortByTimestampDescending = (a, b) => b.timestamp - a.timestamp;
-                                results.sort(sortByTimestampDescending);*/
-
                                 res.status(200).json(results);
                             }
                         }
                     });
 
                 });
+
 
             }
         })
@@ -97,7 +103,7 @@ const getAllConversations = (req, res) => {
 
 const getConversationsOfUser = (user_id) => {
     return new Promise((resolve, reject) => {
-        const query = "SELECT * FROM Participants WHERE user_id = ?";
+        const query = "SELECT * FROM participants WHERE user_id = ?";
         userController.connection.query(query, [user_id], (err, res) => {
             if (err) {
                 console.log("Error in getConversationsOfUser: " + err);
@@ -114,21 +120,21 @@ const deleteConversation = (req, res) => {
     const conversation_id = req.params.conversation_id;
 
     //delete participants first
-    const deleteParticipantsQuery = 'DELETE FROM Participants WHERE conversation_id = ?';
+    const deleteParticipantsQuery = 'DELETE FROM participants WHERE conversation_id = ?';
     userController.connection.query(deleteParticipantsQuery, conversation_id, (err, result) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: 'Internal server error' });
         } else {
             // Delete messages related to the conversation first
-            const deleteMessagesQuery = 'DELETE FROM Messages WHERE conversation_id = ?';
+            const deleteMessagesQuery = 'DELETE FROM messages WHERE conversation_id = ?';
             userController.connection.query(deleteMessagesQuery, conversation_id, (err, result) => {
                 if (err) {
                     console.log(err);
                     res.status(500).json({ error: 'Internal server error' });
                 } else {
                     // Delete the conversation
-                    const deleteConversationQuery = 'DELETE FROM Conversations WHERE conversation_id = ?';
+                    const deleteConversationQuery = 'DELETE FROM conversationss WHERE conversation_id = ?';
                     userController.connection.query(deleteConversationQuery, conversation_id, (err, result) => {
                         if (err) {
                             console.log(err);
@@ -145,7 +151,7 @@ const deleteConversation = (req, res) => {
 
 const getParticipantsOfConversation = (req, res) => {
     const conversation_id = req.params.conversation_id;
-    const query = "SELECT * FROM Participants WHERE conversation_id = ?";
+    const query = "SELECT * FROM participants WHERE conversation_id = ?";
     userController.connection.query(query, [conversation_id], (err, result) => {
         if (err) {
             console.log(err);
