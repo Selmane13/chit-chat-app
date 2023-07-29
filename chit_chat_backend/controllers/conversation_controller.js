@@ -71,29 +71,30 @@ const getAllConversations = (req, res) => {
             let query;
             let results = [];
             if (conversations.length == 0) {
-                res.send("Conversations empty");
-            }
-            if (conversations != null) {
+                res.status(401).send(results);
+            } else {
+                if (conversations != null) {
 
-                conversations.forEach((element, index) => {
-                    query = 'SELECT * FROM conversations WHERE conversation_id = ?';
+                    conversations.forEach((element, index) => {
+                        query = 'SELECT * FROM conversations WHERE conversation_id = ?';
 
-                    userController.connection.query(query, element, (err, result) => {
-                        if (err) {
+                        userController.connection.query(query, element, (err, result) => {
+                            if (err) {
 
-                            console.log("err in conversation.forEach: " + err);
-                        } else {
+                                console.log("err in conversation.forEach: " + err);
+                            } else {
 
-                            results.push(result[0]);
-                            if (index == conversations.length - 1) {
-                                res.status(200).json(results);
+                                results.push(result[0]);
+                                if (index == conversations.length - 1) {
+                                    res.status(200).json(results);
+                                }
                             }
-                        }
+                        });
+
                     });
 
-                });
 
-
+                }
             }
         })
         .catch((err) => {

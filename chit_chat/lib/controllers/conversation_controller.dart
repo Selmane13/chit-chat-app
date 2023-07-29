@@ -45,6 +45,7 @@ class ConversationController extends GetxController {
   Future<bool> getAllConversations() async {
     Response response = await conversationRepo.getAllConversations(
         {"user_id": Get.find<UserController>().userModel.user_id});
+    print(response.statusCode);
     if (response.statusCode == 200) {
       _conversations = [];
       for (int i = 0; i < response.body.length; i++) {
