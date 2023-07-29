@@ -4,7 +4,7 @@ const userController = require('./user_controller');
 
 const deleteMssg = (req, res) => {
     const message_id = req.params.message_id;
-    const query = 'DELETE FROM Messages WHERE message_id = ?';
+    const query = 'DELETE FROM messages WHERE message_id = ?';
     userController.connection.query(query, message_id, (err, result) => {
         if (err) {
             console.log(err);
@@ -28,7 +28,7 @@ const createMssg = (req, res) => {
 
 const insertMssgDB = (data) => {
     return new Promise((resolve, reject) => {
-        const query = 'INSERT INTO Messages SET ?';
+        const query = 'INSERT INTO messages SET ?';
         userController.connection.query(query, data, (err, result) => {
             if (err) {
 
@@ -44,7 +44,7 @@ const insertMssgDB = (data) => {
 const getMssg = (req, res) => {
     const message_id = req.params.message_id;
     console.log(req.params.message_id);
-    const query = 'SELECT * FROM Messages WHERE message_id =  ?';
+    const query = 'SELECT * FROM messages WHERE message_id =  ?';
     userController.connection.query(query, message_id, (err, result) => {
         if (err) {
             console.log(err);
@@ -58,7 +58,7 @@ const getMssg = (req, res) => {
 const getAllMssgs = (req, res) => {
     const conversation_id = req.params.conversation_id;
     const sender_id = req.params.sender_id;
-    const query = 'SELECT * FROM Messages WHERE conversation_id = ? AND sender_id = ?';
+    const query = 'SELECT * FROM messages WHERE conversation_id = ? AND sender_id = ?';
     userController.connection.query(query, [conversation_id, sender_id], (err, result) => {
         if (err) {
             console.log(err);
