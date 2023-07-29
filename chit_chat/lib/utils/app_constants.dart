@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String BASE_URL = "http://192.168.1.8:8000";
+  static const String BASE_URL = "https://chit-chat-yhe0.onrender.com";
   static const String REGISTER_URI = "/account/register";
   static const String LOGIN_URI = "/account/login";
   static const String GET_CONVERSATIONS = "/conversation/get-all";

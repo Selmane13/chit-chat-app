@@ -44,8 +44,8 @@ userController.connection.connect((err) => {
         console.error('Error connecting to MySQL server: ', err);
         return;
     } else {
-        const server = app.listen(8000, () => {
-            console.log('Server listening on port 8000');
+        const server = app.listen(() => {
+            console.log('Server listening ');
         });
         const io = socketIO(server, {
             cors: { transports: ['websocket'] }
