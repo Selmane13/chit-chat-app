@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:chit_chat/controllers/conversation_controller.dart';
 import 'package:chit_chat/controllers/user_controller.dart';
+import 'package:chit_chat/routes/route_helper.dart';
 import 'package:chit_chat/utils/Dimensions.dart';
 import 'package:chit_chat/utils/app_constants.dart';
 import 'package:chit_chat/utils/mssg_widget.dart';
@@ -70,9 +71,10 @@ class _ConversationPageState extends State<ConversationPage>
   @override
   void dispose() {
     // Dispose of controllers and animation when the state is being disposed of.
+    _scrollController.dispose();
     _mssgController.dispose();
     animationController.dispose();
-    _scrollController.dispose();
+
     super.dispose();
   }
 
@@ -95,8 +97,11 @@ class _ConversationPageState extends State<ConversationPage>
     return Scaffold(
       appBar: AppBar(
         leading: GestureDetector(
-            onTap: () {
+            onTap: () async {
               _revertAnimation();
+              await Get.find<ConversationController>().getMssgsOfParticipants();
+              Get.find<ConversationController>().sortMessages();
+              await Get.find<ConversationController>().getOtherParticipants();
               Get.back();
             },
             child: Icon(Icons.arrow_back_ios_new_outlined)),
@@ -138,12 +143,45 @@ class _ConversationPageState extends State<ConversationPage>
         ),
         backgroundColor: Color(0xff8640DF),
         actions: [
-          Container(
-              margin: EdgeInsets.only(right: Dimensions.height20),
-              child: Icon(Icons.phone)),
-          Container(
-              margin: EdgeInsets.only(right: Dimensions.height20),
-              child: Icon(Icons.info_outline_rounded))
+          GestureDetector(
+            onTap: (){
+              Get.defaultDialog(
+                  buttonColor:Color(0xff8640DF) ,
+                  titlePadding: EdgeInsets.only(
+                      top: Dimensions.height20,
+                      left: Dimensions.height20,
+                      right: Dimensions.height20),
+                  title: "Audio call",
+                  contentPadding: EdgeInsets.all(
+                      Dimensions.height20),
+                  middleText:
+                  "Audio call is comming soon...",
+                  textConfirm: "OK",
+                  confirmTextColor: Colors.white,
+                  onConfirm: (){
+                    Get.back();
+                  }
+              );
+            },
+            child: Container(
+                margin: EdgeInsets.only(right: Dimensions.height20),
+                child: Icon(Icons.phone)),
+          ),
+          GestureDetector(
+            onTap: (){
+              Get.find<UserController>().searchedUsersList.clear();
+              Get.find<UserController>().setCurrSearchedUser = 0;
+              Get.find<UserController>().searchedUsersList.add({
+                "user_id":_conversationController.otherPartcipant[_conversationController.currConversation]!["user_id"],
+                "username":_conversationController.otherPartcipant[_conversationController.currConversation]!["username"],
+                "img":_conversationController.otherPartcipant[_conversationController.currConversation]!["img"]
+              });
+              Get.toNamed(RouteHelper.getInfoPage());
+            },
+            child: Container(
+                margin: EdgeInsets.only(right: Dimensions.height20),
+                child: Icon(Icons.info_outline_rounded)),
+          )
         ],
       ),
       body: Stack(
@@ -259,67 +297,119 @@ class _ConversationPageState extends State<ConversationPage>
                   return ListView.builder(
                       controller: _scrollController,
                       itemCount: _conversationController
-                          .sortedMessages[
+                          .conversations[
                               _conversationController.currConversation]
+                          .sortedMessages
                           .length,
                       itemBuilder: (itemBuilder, index) {
                         return Row(
                           mainAxisAlignment: _conversationController
-                                      .sortedMessages[_conversationController
-                                          .currConversation][index]
+                                      .conversations[_conversationController
+                                          .currConversation]
+                                      .sortedMessages[index]
                                       .senderId! ==
                                   Get.find<UserController>().userModel.user_id
                               ? MainAxisAlignment.end
                               : MainAxisAlignment.start,
                           children: [
-                            Container(
-                              padding: EdgeInsets.only(
-                                  left: Dimensions.height10,
-                                  right: Dimensions.height10,
-                                  top: Dimensions.height10 / 2,
-                                  bottom: Dimensions.height10 / 2),
-                              child: MssgWidget(
-                                isMe: _conversationController
-                                        .sortedMessages[_conversationController
-                                            .currConversation][index]
-                                        .senderId! ==
+                            GestureDetector(
+                              onLongPress: () {
+                                if(_conversationController
+                                    .conversations[_conversationController
+                                    .currConversation]
+                                    .sortedMessages[index]
+                                    .senderId! ==
                                     Get.find<UserController>()
                                         .userModel
-                                        .user_id,
-                                message: _conversationController
-                                    .sortedMessages[_conversationController
-                                        .currConversation][index]
-                                    .messageContent!,
-                                color: _conversationController
-                                            .sortedMessages[
-                                                _conversationController
-                                                    .currConversation][index]
-                                            .senderId! ==
-                                        Get.find<UserController>()
-                                            .userModel
-                                            .user_id
-                                    ? Colors.grey.withOpacity(0.2)
-                                    : Color(0xff8640DF),
-                                txtColor: _conversationController
-                                            .sortedMessages[
-                                                _conversationController
-                                                    .currConversation][index]
-                                            .senderId! ==
-                                        Get.find<UserController>()
-                                            .userModel
-                                            .user_id
-                                    ? Colors.black
-                                    : Colors.white,
-                                image: _conversationController.otherPartcipant[
-                                            _conversationController
-                                                .currConversation]!["img"] !=
-                                        null
-                                    ? AppConstants.BASE_URL +
-                                        "/" +
-                                        _conversationController.otherPartcipant[
-                                            _conversationController
-                                                .currConversation]!["img"]
-                                    : null,
+                                        .user_id){
+                                Get.defaultDialog(
+                                    title: "Delete message",
+                                    middleText:
+                                        'Do you really want to delete this message? ',
+                                    radius: 10.0,
+                                    actions: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              _conversationController.deleteMessage(
+                                                  _conversationController
+                                                      .conversations[
+                                                          _conversationController
+                                                              .currConversation]
+                                                      .sortedMessages[index]
+                                                      .messageId!,
+                                                  index);
+
+                                              Get.back();
+                                            },
+                                            child: Text('Confirm'),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  Color(0xffFF0000),
+                                            ), // Change the cancel button color
+                                          ),
+                                        ],
+                                      )
+                                    ]);}
+                              },
+                              child: Container(
+                                padding: EdgeInsets.only(
+                                    left: Dimensions.height10,
+                                    right: Dimensions.height10,
+                                    top: Dimensions.height10 / 2,
+                                    bottom: Dimensions.height10 / 2),
+                                child: MssgWidget(
+                                  isMe: _conversationController
+                                          .conversations[_conversationController
+                                              .currConversation]
+                                          .sortedMessages[index]
+                                          .senderId! ==
+                                      Get.find<UserController>()
+                                          .userModel
+                                          .user_id,
+                                  message: _conversationController
+                                      .conversations[_conversationController
+                                          .currConversation]
+                                      .sortedMessages[index]
+                                      .messageContent!,
+                                  color: _conversationController
+                                              .conversations[
+                                                  _conversationController
+                                                      .currConversation]
+                                              .sortedMessages[index]
+                                              .senderId! ==
+                                          Get.find<UserController>()
+                                              .userModel
+                                              .user_id
+                                      ? Colors.grey.withOpacity(0.2)
+                                      : Color(0xff8640DF),
+                                  txtColor: _conversationController
+                                              .conversations[
+                                                  _conversationController
+                                                      .currConversation]
+                                              .sortedMessages[index]
+                                              .senderId! ==
+                                          Get.find<UserController>()
+                                              .userModel
+                                              .user_id
+                                      ? Colors.black
+                                      : Colors.white,
+                                  image: _conversationController
+                                                  .otherPartcipant[
+                                              _conversationController
+                                                  .currConversation]!["img"] !=
+                                          null
+                                      ? AppConstants.BASE_URL +
+                                          "/" +
+                                          _conversationController
+                                                  .otherPartcipant[
+                                              _conversationController
+                                                  .currConversation]!["img"]
+                                      : null,
+                                ),
                               ),
                             ),
                           ],

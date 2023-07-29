@@ -15,5 +15,8 @@ class AppConstants {
   static const String UPDATE_PROFILE = "/account/updateImg";
   static const String GET_USER = "/account/getUser";
   static const String NEW_CONVERSATION = "/conversation/create";
+  static const String DELETE_CONVERSATION = "/conversation/delete";
+  static const String DELETE_MESSAGE = "/message/delete";
+  static const String DELETE_DEVICETOKEN = "/account/deviceToken-remove";
   static const String TOKEN = "token";
 }

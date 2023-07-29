@@ -112,8 +112,8 @@ class ProfilePage extends GetView<UserController> {
           ),
           AccountWidget(icon: Icons.lock_outline_rounded, text: "Password"),
           GestureDetector(
-            onTap: () {
-              controller.logout();
+            onTap: () async {
+              await controller.logout();
               Get.delete<ConversationController>();
               Get.offAndToNamed(RouteHelper.getSignInPage());
             },

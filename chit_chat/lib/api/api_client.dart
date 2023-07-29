@@ -52,6 +52,16 @@ class ApiClient extends GetConnect implements GetxService {
     }
   }
 
+  Future<Response> deleteData(String uri) async {
+    try {
+      Response response = await delete(uri);
+      return response;
+    } catch (e) {
+      print(e.toString());
+      return Response(statusText: e.toString());
+    }
+  }
+
   void updateHeader(String token) {
     _mainHeaders = {
       'Content-type': 'application/json; charset=UTF=8',

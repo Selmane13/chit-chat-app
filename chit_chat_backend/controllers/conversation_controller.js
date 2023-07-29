@@ -111,7 +111,7 @@ const getConversationsOfUser = (user_id) => {
 };
 
 const deleteConversation = (req, res) => {
-    const conversation_id = req.body.conversation_id;
+    const conversation_id = req.params.conversation_id;
 
     //delete participants first
     const deleteParticipantsQuery = 'DELETE FROM Participants WHERE conversation_id = ?';

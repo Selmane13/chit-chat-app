@@ -86,21 +86,26 @@ const login = (req, res) => {
     connection.query(query, [data.email], (err, result) => {
         if (err) {
             console.log(err);
+
         } else {
             if (result.length === 0) {
-                console.log("wrong credentials")
+                console.log("wrong credentials");
+                res.status(400).send({ error: "wrong credntials" });
             } else {
                 const user = result[0];
                 bcrypt.compare(data.password, user.password, (error, match) => {
                     if (error) {
                         console.log(error);
+
                     } else if (!match) {
                         console.log("wrong password");
+                        res.status(400).send(result);
                     } else {
                         const query2 = 'UPDATE Users SET deviceToken = ? WHERE user_id = ? ';
                         connection.query(query2, [data.deviceToken, result[0].user_id], (err2, result2) => {
                             if (err2) {
                                 console.log(err2);
+                                res.status(400).send();
                             } else {
                                 const token = jsonwebtoken.sign({ userId: user.user_id, email: user.email }, JWTKey, { expiresIn: '1h' });
                                 res.send({
@@ -238,6 +243,18 @@ const getUser = (req, res) => {
     })
 }
 
+const removeDeviceToken = (req, res) => {
+    const user_id = req.body.user_id;
+    const query = 'UPDATE Users SET deviceToken = ? WHERE user_id = ?';
+    connection.query(query, ['', user_id], (err, result) => {
+        if (err) {
+            console.log(err);
+        } else {
+            res.status(200).send(result);
+        }
+    })
+}
+
 module.exports = {
     connection,
     checkUserExists,
@@ -250,5 +267,6 @@ module.exports = {
     updatePhone,
     searchUsers,
     getUser,
-    getDeviceToken
+    getDeviceToken,
+    removeDeviceToken
 };

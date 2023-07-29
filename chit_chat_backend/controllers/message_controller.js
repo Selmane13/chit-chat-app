@@ -3,7 +3,7 @@ const userController = require('./user_controller');
 
 
 const deleteMssg = (req, res) => {
-    const message_id = req.body.message_id;
+    const message_id = req.params.message_id;
     const query = 'DELETE FROM Messages WHERE message_id = ?';
     userController.connection.query(query, message_id, (err, result) => {
         if (err) {

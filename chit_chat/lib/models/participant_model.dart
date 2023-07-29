@@ -5,7 +5,6 @@ class ParticipantModel {
   String? user_id;
   String? conversation_id;
   List<MessageModel> messages = [];
-  List<MessageModel> sortedMessages = [];
 
   ParticipantModel(
       {required this.conversation_id,

@@ -64,7 +64,14 @@ userController.connection.connect((err) => {
                     "message_content": data.message_content
                 };
                 messageController.insertMssgDB(mssg).then((result) => {
-                    io.emit("receive_message", result);
+                    const resultData = {
+                        "conversation_id": data.conversation_id,
+                        "sender_id": data.sender_id,
+                        "message_content": data.message_content,
+                        "message_id": result.insertId,
+                        "timestamp": new Date()
+                    };
+                    io.emit("receive_message", resultData);
                     //console.log("message sent");
                 }).catch((err) => {
                     console.log(err);
@@ -127,10 +134,10 @@ app.get('/conversation/get', conversationController.getConversation);
 app.get('/conversation/get-all/:user_id', conversationController.getAllConversations);
 
 //delete conversation
-app.delete('/conversation/delete', conversationController.deleteConversation);
+app.delete('/conversation/delete/:conversation_id', conversationController.deleteConversation);
 
 //delete message
-app.delete('/message/delete', messageController.deleteMssg);
+app.delete('/message/delete/:message_id', messageController.deleteMssg);
 
 
 //send message endpoint
@@ -176,6 +183,9 @@ app.post('/account/updateImg', upload.single('img'), (req, res) => {
 
 //get user
 app.get('/account/getUser/:user_id', userController.getUser);
+
+//remove deviceToken
+app.put('/account/deviceToken-remove', userController.removeDeviceToken);
 
 
 

@@ -37,4 +37,14 @@ class ConversationRepo extends GetxService {
   Future<Response> newConversation(Map<String, dynamic> body) async {
     return await apiClient.postData(AppConstants.NEW_CONVERSATION, body);
   }
+
+  Future<Response> deleteConversation(String conversation_id) async {
+    return await apiClient
+        .deleteData(AppConstants.DELETE_CONVERSATION + "/$conversation_id");
+  }
+
+  Future<Response> deleteMessage(String messageId) async {
+    return await apiClient
+        .deleteData(AppConstants.DELETE_MESSAGE + "/$messageId");
+  }
 }

@@ -27,6 +27,14 @@ class InfoPage extends GetView<UserController> {
           title: const Text('Information'),
           centerTitle: true,
           backgroundColor: Color(0xff8640DF),
+          leading: GestureDetector(
+              onTap: () async {
+                if(Get.previousRoute == RouteHelper.getConversationPage()){
+                  controller.searchedUsersList.clear();
+                }
+                Get.back();
+              },
+              child: Icon(Icons.arrow_back_ios_new_outlined)),
         ),
         body: ListView(children: [
           Container(
@@ -79,42 +87,48 @@ class InfoPage extends GetView<UserController> {
           ),
           GestureDetector(
             onTap: () async {
-              List<ConversationModel> conversations =
-                  Get.find<ConversationController>().conversations;
+              if(Get.previousRoute == RouteHelper.getConversationPage()){
+                controller.searchedUsersList.clear();
+                Get.back();
+              }else{
+                List<ConversationModel> conversations =
+                    Get.find<ConversationController>().conversations;
 
-              bool done = false;
-              int i = 0;
-              while (i < conversations.length && !done) {
-                for (var participant in conversations[i].partcipants) {
-                  if (participant.user_id! ==
-                      controller.searchedUsersList[controller.currSearchedUser]
-                              ["user_id"]
-                          .toString()) {
-                    Get.find<ConversationController>().currConversation = i - 1;
-                    done = true;
+                bool done = false;
+                int i = 0;
+                while (i < conversations.length && !done) {
+                  for (var participant in conversations[i].partcipants) {
+                    if (participant.user_id! ==
+                        controller.searchedUsersList[controller.currSearchedUser]
+                        ["user_id"]
+                            .toString()) {
+                      Get.find<ConversationController>().currConversation = i - 1;
+                      done = true;
+                    }
+                    i++;
                   }
-                  i++;
+                }
+                if (!done) {
+                  print(done);
+                  String? convId = await Get.find<ConversationController>()
+                      .newConversation(
+                      controller.userModel.user_id,
+                      controller
+                          .searchedUsersList[controller.currSearchedUser]
+                      ["user_id"]
+                          .toString(),
+                      controller
+                          .searchedUsersList[controller.currSearchedUser]
+                      ["username"]);
+                  await _loadData();
+                  Get.find<ConversationController>().currConversation =
+                  Get.find<ConversationController>()
+                      .findConversation(convId!)!;
+                  Get.offAndToNamed(RouteHelper.getConversationPage());
+                  done = true;
                 }
               }
-              if (!done) {
-                print(done);
-                String? convId = await Get.find<ConversationController>()
-                    .newConversation(
-                        controller.userModel.user_id,
-                        controller
-                            .searchedUsersList[controller.currSearchedUser]
-                                ["user_id"]
-                            .toString(),
-                        controller
-                                .searchedUsersList[controller.currSearchedUser]
-                            ["username"]);
-                await _loadData();
-                Get.find<ConversationController>().currConversation =
-                    Get.find<ConversationController>()
-                        .findConversation(convId!)!;
-                Get.offAndToNamed(RouteHelper.getConversationPage());
-                done = true;
-              }
+
             },
             child: AccountWidget(
                 icon: Icons.message,

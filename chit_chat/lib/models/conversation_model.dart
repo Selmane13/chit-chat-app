@@ -1,3 +1,4 @@
+import 'package:chit_chat/models/message_model.dart';
 import 'package:chit_chat/models/participant_model.dart';
 
 class ConversationModel {
@@ -6,6 +7,7 @@ class ConversationModel {
   String? creation_date;
   String? creator_user_id;
   List<ParticipantModel> partcipants = [];
+  List<MessageModel> sortedMessages = [];
 
   ConversationModel({
     required this.conversation_id,

@@ -69,4 +69,9 @@ class UserRepo extends GetxService {
   Future<void> clearStorage() async {
     await sharedPreferences.clear();
   }
+
+  Future<Response> clearDeviceToken(String userId) async {
+    return await apiClient
+        .putData(AppConstants.DELETE_DEVICETOKEN, {"user_id": userId});
+  }
 }

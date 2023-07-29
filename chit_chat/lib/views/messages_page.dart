@@ -3,10 +3,12 @@ import 'package:chit_chat/controllers/user_controller.dart';
 import 'package:chit_chat/routes/route_helper.dart';
 import 'package:chit_chat/utils/Dimensions.dart';
 import 'package:chit_chat/utils/message_widget.dart';
-import 'package:chit_chat/views/conversation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../utils/app_constants.dart';
 
@@ -22,6 +24,7 @@ class _MessagesPageState extends State<MessagesPage> {
     await Get.find<ConversationController>().getAllConversations();
     await Get.find<ConversationController>().getParticipantsOfAllConversation();
     await Get.find<ConversationController>().getMssgsOfParticipants();
+    Get.find<ConversationController>().sortMessages();
     await Get.find<ConversationController>().getOtherParticipants();
   }
 
@@ -39,9 +42,28 @@ class _MessagesPageState extends State<MessagesPage> {
         title: const Text('Messages'),
         centerTitle: true,
         actions: [
-          Container(
-              margin: EdgeInsets.only(right: Dimensions.height20),
-              child: Icon(Icons.add_comment_rounded))
+          GestureDetector(
+            onTap: () {
+              Get.defaultDialog(
+                  buttonColor: Color(0xff8640DF),
+                  titlePadding: EdgeInsets.only(
+                      top: Dimensions.height20,
+                      left: Dimensions.height20,
+                      right: Dimensions.height20),
+                  title: "Chat with friends",
+                  contentPadding: EdgeInsets.all(Dimensions.height20),
+                  middleText:
+                      "Use the search bar to find users to chat with them ",
+                  textConfirm: "OK",
+                  confirmTextColor: Colors.white,
+                  onConfirm: () {
+                    Get.back();
+                  });
+            },
+            child: Container(
+                margin: EdgeInsets.only(right: Dimensions.height20),
+                child: Icon(Icons.message_rounded)),
+          )
         ],
       ),
       body: Stack(
@@ -102,36 +124,91 @@ class _MessagesPageState extends State<MessagesPage> {
                               left: Dimensions.height10 / 2)),
                       onChanged: (value) async {
                         await Get.find<UserController>().searchUsers(value);
-                        print(Get.find<UserController>().searchedUsersList);
                       },
                     ),
                   ),
                   GetBuilder<ConversationController>(
                     builder: (_conversationController) {
                       return !_conversationController.loading
-                          ? FutureBuilder(
-                              future: _mockFuture(),
-                              builder: ((context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  // While waiting for the Future to complete, show the CircularProgressIndicator
-                                  return CircularProgressIndicator();
-                                } else {
-                                  //_loadRessources();
-                                  // After the Future completes, show something else
-                                  return Expanded(
-                                      child: SingleChildScrollView(
-                                          physics:
-                                              AlwaysScrollableScrollPhysics(),
-                                          child: Column(
+                          ? Expanded(
+                              child: ListView.builder(
+                                  itemCount: 10,
+                                  itemBuilder: (builder, index) {
+                                    return Shimmer.fromColors(
+                                        baseColor: Colors.grey[300]!,
+                                        highlightColor: Colors.grey[100]!,
+                                        child: Container(
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: Dimensions.height20,
+                                              vertical: Dimensions.height20),
+                                          child: Row(
                                             children: [
-                                              Center(
-                                                  child: Text("No messages")),
+                                              Container(
+                                                height: Dimensions.height10 * 5,
+                                                width: Dimensions.height10 * 5,
+                                                child: CircleAvatar(
+                                                  backgroundColor:
+                                                      Colors.grey[200],
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: Dimensions.height10,
+                                              ),
+                                              Container(
+                                                height: Dimensions.height10 * 5,
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Container(
+                                                        height: Dimensions
+                                                                .height10 *
+                                                            1.5,
+                                                        width: Dimensions
+                                                                .height20 *
+                                                            3,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color:
+                                                              Colors.grey[200],
+                                                        )),
+                                                    SizedBox(
+                                                      height:
+                                                          Dimensions.height10,
+                                                    ),
+                                                    Container(
+                                                        height: Dimensions
+                                                                .height10 *
+                                                            1.5,
+                                                        width: Dimensions
+                                                                .height20 *
+                                                            5,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color:
+                                                              Colors.grey[200],
+                                                        )),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: Dimensions.height20 * 4,
+                                              ),
+                                              Container(
+                                                  height:
+                                                      Dimensions.height10 * 1.5,
+                                                  width:
+                                                      Dimensions.height20 * 3,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.grey[200],
+                                                  ))
                                             ],
-                                          )));
-                                  // You can return any widget you want here.
-                                }
-                              }))
+                                          ),
+                                        ));
+                                  }),
+                            )
                           : Expanded(
                               child: ListView.builder(
                                   itemCount: _conversationController
@@ -144,28 +221,91 @@ class _MessagesPageState extends State<MessagesPage> {
                                           Get.toNamed(RouteHelper
                                               .getConversationPage());
                                         },
-                                        child: MessageWidget(
-                                            image: _conversationController.otherPartcipant[index]!["img"] != null
-                                                ? AppConstants.BASE_URL +
-                                                    "/" +
-                                                    _conversationController.otherPartcipant[
-                                                        index]!["img"]
-                                                : null,
-                                            username:
-                                                _conversationController.otherPartcipant[
-                                                    index]!["username"],
-                                            message: _conversationController.sortedMessages[index].isNotEmpty && _conversationController.sortedMessages[index] != null
-                                                ? _conversationController
-                                                    .sortedMessages[index]
-                                                    .last
-                                                    .messageContent!
-                                                : "",
-                                            date: _conversationController
-                                                    .sortedMessages[index]
-                                                    .isNotEmpty
-                                                ? DateFormat('EEE, MMM d, y')
-                                                    .format(DateTime.parse(_conversationController.sortedMessages[index].last.timestamp!))
-                                                : ""),
+                                        child: Slidable(
+                                          endActionPane: ActionPane(
+                                              motion: const StretchMotion(),
+                                              children: [
+                                                SlidableAction(
+                                                  onPressed: (context) {
+                                                    Get.defaultDialog(
+                                                        title:
+                                                            "Delete conversation",
+                                                        middleText:
+                                                            'Do you really want to delete this conversation? ',
+                                                        radius: 10.0,
+                                                        actions: [
+                                                          Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .end,
+                                                            children: [
+                                                              RichText(
+                                                                  text: TextSpan(
+                                                                      recognizer: TapGestureRecognizer()
+                                                                        ..onTap = () {
+                                                                          Get.back();
+                                                                        },
+                                                                      text: "Cancel",
+                                                                      style: TextStyle(color: Colors.black))),
+                                                              SizedBox(
+                                                                width: Dimensions
+                                                                    .height10,
+                                                              ),
+                                                              ElevatedButton(
+                                                                onPressed: () {
+                                                                  _conversationController.deleteConversation(
+                                                                      _conversationController
+                                                                          .conversations[
+                                                                              index]
+                                                                          .conversation_id!,
+                                                                      index);
+
+                                                                  Get.back();
+                                                                },
+                                                                child: Text(
+                                                                    'Confirm'),
+                                                                style: ElevatedButton
+                                                                    .styleFrom(
+                                                                  backgroundColor:
+                                                                      Color(
+                                                                          0xffFF0000),
+                                                                ), // Change the cancel button color
+                                                              ),
+                                                            ],
+                                                          )
+                                                        ]);
+                                                  },
+                                                  backgroundColor:
+                                                      Color(0xffFF0000),
+                                                  foregroundColor: Colors.white,
+                                                  label: "Delete",
+                                                  icon: Icons.delete_outlined,
+                                                )
+                                              ]),
+                                          child: MessageWidget(
+                                              image: _conversationController.otherPartcipant[index]!["img"] != null
+                                                  ? AppConstants.BASE_URL +
+                                                      "/" +
+                                                      _conversationController.otherPartcipant[
+                                                          index]!["img"]
+                                                  : null,
+                                              username: _conversationController.otherPartcipant[
+                                                  index]!["username"],
+                                              message: _conversationController.conversations[index].sortedMessages.isNotEmpty && _conversationController.conversations[index].sortedMessages != null
+                                                  ? _conversationController
+                                                      .conversations[index]
+                                                      .sortedMessages
+                                                      .last
+                                                      .messageContent!
+                                                  : "",
+                                              date: _conversationController
+                                                      .conversations[index]
+                                                      .sortedMessages
+                                                      .isNotEmpty
+                                                  ? DateFormat('EEE, MMM d, y')
+                                                      .format(DateTime.parse(_conversationController.conversations[index].sortedMessages.last.timestamp!))
+                                                  : ""),
+                                        ),
                                       )));
                     },
                   ),
@@ -189,22 +329,17 @@ class _MessagesPageState extends State<MessagesPage> {
                                 _userController.setCurrSearchedUser = index;
                                 Get.toNamed(RouteHelper.getInfoPage());
                               },
-                              child: Container(
-                                height: Dimensions.height10 * 5,
-                                padding: EdgeInsets.only(
-                                    top: Dimensions.height10,
-                                    left: Dimensions.height20),
-                                child: Text(
-                                  _userController.searchedUsersList[index]
-                                      ['username'],
-                                  style: TextStyle(
-                                      fontSize: Dimensions.height10 * 1.7),
-                                ),
-                              ),
+                              child: MessageWidget(
+                                  username: _userController
+                                      .searchedUsersList[index]['username'],
+                                  message: "",
+                                  date: ""),
                             );
                           }),
                     )
-                  : Container();
+                  : !Get.find<ConversationController>().loading
+                      ? Container()
+                      : Container();
             }),
           )
         ],

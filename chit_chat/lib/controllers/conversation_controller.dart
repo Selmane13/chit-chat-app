@@ -21,10 +21,8 @@ class ConversationController extends GetxController {
 
   List<ConversationModel> _conversations = [];
   int _currConversation = 0;
-  List<List<MessageModel>> _sortedMessages = [];
   List<Map<String, dynamic>?> _otherParticipants = [];
   List<Map<String, dynamic>?> get otherPartcipant => _otherParticipants;
-  List<List<MessageModel>> get sortedMessages => _sortedMessages;
 
   int get currConversation => _currConversation;
   set currConversation(int index) {
@@ -109,7 +107,6 @@ class ConversationController extends GetxController {
             _conversations[i].partcipants[j].user_id!, i, j);
       }
     }
-    sortMessages();
   }
 
   void sendMessage(Map<String, dynamic> mssgBody) async {
@@ -153,21 +150,28 @@ class ConversationController extends GetxController {
   }
 
   void sortMessages() {
-    _sortedMessages = [];
     List<MessageModel> unsortedMessages = [];
-    for (var conversation in _conversations) {
-      for (var participant in conversation.partcipants) {
+    for (var i = 0; i < _conversations.length; i++) {
+      for (var participant in _conversations[i].partcipants) {
         unsortedMessages.addAll(participant.messages);
       }
       unsortedMessages.sort((a, b) => a.timestamp!.compareTo(b.timestamp!));
-      _sortedMessages.add(unsortedMessages);
+      _conversations[i].sortedMessages.clear();
+      _conversations[i].sortedMessages.addAll(unsortedMessages);
       unsortedMessages = [];
     }
+
+    conversations.sort((a, b) {
+      final DateTime timestampA =
+          DateTime.parse(a.sortedMessages.last.timestamp!);
+      final DateTime timestampB =
+          DateTime.parse(b.sortedMessages.last.timestamp!);
+      return timestampB.compareTo(timestampA); // Sort in descending order
+    });
   }
 
   void clearConversations() {
     _conversations = [];
-    _sortedMessages = [];
   }
 
   Future<Map<String, dynamic>?> getOtherPartcipant(int index) async {
@@ -186,6 +190,7 @@ class ConversationController extends GetxController {
     for (var i = 0; i < _conversations.length; i++) {
       _otherParticipants.add(await getOtherPartcipant(i));
     }
+    update();
   }
 
   Future<String?> newConversation(
@@ -207,6 +212,34 @@ class ConversationController extends GetxController {
     }
   }
 
+  Future<void> deleteConversation(String conversationId, int index) async {
+    Response response =
+        await conversationRepo.deleteConversation(conversationId);
+    if (response.statusCode == 200) {
+      _conversations.removeAt(index);
+      _otherParticipants.removeAt(index);
+      update();
+      print("conversation deleted succefully");
+    } else {
+      print("err in deleteConversation ${response.statusText}");
+    }
+  }
+
+  Future<void> deleteMessage(String messageId, int index) async {
+    Response response = await conversationRepo.deleteMessage(messageId);
+    if (response.statusCode == 200) {
+      _conversations[_currConversation].sortedMessages.removeAt(index);
+      for (var participant in _conversations[_currConversation].partcipants) {
+        participant.messages
+            .removeWhere((element) => element.messageId == messageId);
+      }
+      update();
+      print("message deleted succefully");
+    } else {
+      print("err in deleteConversation ${response.statusText}");
+    }
+  }
+
   void clearOtherParticipants() {
     _otherParticipants = [];
   }
@@ -218,6 +251,7 @@ class ConversationController extends GetxController {
     await getAllConversations();
     await getParticipantsOfAllConversation();
     await getMssgsOfParticipants();
+    sortMessages();
     await getOtherParticipants();
 
     socket = IO.io(AppConstants.BASE_URL,
@@ -227,8 +261,12 @@ class ConversationController extends GetxController {
       print("error connecting to socekt.io  " + data);
     });
     socket.on("receive_message", (data) async {
-      print("message received");
-      await getMssgsOfParticipants();
+      _conversations[_currConversation].sortedMessages.add(MessageModel(
+          messageId: data["message_id"].toString(),
+          conversationId: data["conversation_id"],
+          senderId: data["sender_id"],
+          messageContent: data["message_content"],
+          timestamp: data["timestamp"]));
       update();
     });
     _loading = true;

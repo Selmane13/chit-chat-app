@@ -23,6 +23,9 @@ class UserController extends GetxController {
     _currSearchedUser = index;
   }
 
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
   File? get image => _image;
 
   List<dynamic> get searchedUsersList => _searchedUsersList;
@@ -35,6 +38,8 @@ class UserController extends GetxController {
   UserController({required this.userRepo});
 
   Future<bool> signUp(String username, String password, String email) async {
+    _isLoading = true;
+    update();
     Map<String, String> body = {
       "username": username,
       "password": password,
@@ -51,9 +56,13 @@ class UserController extends GetxController {
           email: email,
           phone: "",
           img: "");
+      _isLoading = false;
+      update();
       return true;
     } else {
       print("response" + response.statusCode.toString());
+      _isLoading = false;
+      update();
       return false;
     }
   }
@@ -62,6 +71,8 @@ class UserController extends GetxController {
     String email,
     String password,
   ) async {
+    _isLoading = true;
+    update();
     Map<String, String> body = {
       "email": email,
       "password": password,
@@ -86,9 +97,13 @@ class UserController extends GetxController {
         _userModel!.img!,
         _userModel!.password!
       ]);
+      _isLoading = false;
+      update();
       return true;
     } else {
       print("response" + response.statusCode.toString());
+      _isLoading = false;
+      update();
       return false;
     }
   }
@@ -123,9 +138,10 @@ class UserController extends GetxController {
     }
   }
 
-  void logout() {
+  Future<void> logout() async {
+    await clearDeviceToken();
     _userModel = null;
-    userRepo.clearStorage();
+    await userRepo.clearStorage();
   }
 
   Future<void> searchUsers(String username) async {
@@ -184,6 +200,15 @@ class UserController extends GetxController {
     } else {
       print("err in getUser");
       return null;
+    }
+  }
+
+  Future<void> clearDeviceToken() async {
+    Response response = await userRepo.clearDeviceToken(_userModel!.user_id);
+    if (response.statusCode == 200) {
+      print("deviceToken removed succefully");
+    } else {
+      print("err in clear Device token ${response.statusText}");
     }
   }
 }
