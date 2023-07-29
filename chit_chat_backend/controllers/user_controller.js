@@ -12,11 +12,12 @@ const connection = mysql.createConnection({
     user: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
+    port: process.env.DB_PORT
 });
 
 const checkUserExists = (email) => {
     return new Promise((resolve, reject) => {
-        const query = 'SELECT * FROM Users WHERE email = ?';
+        const query = 'SELECT * FROM users WHERE email = ?';
         connection.query(query, email, (error, results) => {
             if (error) {
                 reject(error);
@@ -82,7 +83,7 @@ const createUser = (req, res) => {
 
 const login = (req, res) => {
     const data = req.body;
-    const query = "SELECT * FROM Users WHERE email = ?";
+    const query = "SELECT * FROM users WHERE email = ?";
     connection.query(query, [data.email], (err, result) => {
         if (err) {
             console.log(err);
@@ -101,7 +102,7 @@ const login = (req, res) => {
                         console.log("wrong password");
                         res.status(400).send(result);
                     } else {
-                        const query2 = 'UPDATE Users SET deviceToken = ? WHERE user_id = ? ';
+                        const query2 = 'UPDATE users SET deviceToken = ? WHERE user_id = ? ';
                         connection.query(query2, [data.deviceToken, result[0].user_id], (err2, result2) => {
                             if (err2) {
                                 console.log(err2);
@@ -131,7 +132,7 @@ const login = (req, res) => {
 
 const getDeviceToken = (user_id) => {
     return new Promise((resolve, reject) => {
-        const query = "SELECT deviceToken FROM Users WHERE user_id = ?";
+        const query = "SELECT deviceToken FROM users WHERE user_id = ?";
         connection.query(query, user_id, (err, result) => {
             if (err) {
                 reject(err);
@@ -145,7 +146,7 @@ const getDeviceToken = (user_id) => {
 
 const deleteUser = (req, res) => {
     const user_id = req.body.user_id;
-    const query = 'DELETE FROM Users WHERE user_id = ?';
+    const query = 'DELETE FROM users WHERE user_id = ?';
     connection.query(query, user_id, (err, result) => {
         if (err) {
             console.log(err);
@@ -158,7 +159,7 @@ const deleteUser = (req, res) => {
 const updateUsername = (req, res) => {
     const username = req.body.username;
     const user_id = req.body.user_id;
-    const query = `UPDATE Users SET username = ? WHERE user_id = ?`;
+    const query = `UPDATE users SET username = ? WHERE user_id = ?`;
 
     // Execute the query
     connection.query(query, [username, user_id], (err, result) => {
@@ -179,7 +180,7 @@ const updateUsername = (req, res) => {
 const updateEmail = (req, res) => {
     const email = req.body.email;
     const user_id = req.body.user_id;
-    const query = `UPDATE Users SET email = ? WHERE user_id = ?`;
+    const query = `UPDATE users SET email = ? WHERE user_id = ?`;
 
     // Execute the query
     connection.query(sql, [email, user_id], (err, result) => {
@@ -200,7 +201,7 @@ const updateEmail = (req, res) => {
 const updatePhone = (req, res) => {
     const phone = req.body.phone;
     const user_id = req.body.user_id;
-    const query = `UPDATE Users SET phone = ? WHERE user_id = ?`;
+    const query = `UPDATE users SET phone = ? WHERE user_id = ?`;
 
     // Execute the query
     connection.query(sql, [phone, user_id], (err, result) => {
@@ -220,7 +221,7 @@ const updatePhone = (req, res) => {
 
 const searchUsers = (req, res) => {
     const username = req.params.username;
-    const query = `SELECT username,user_id,img FROM Users WHERE username LIKE ?  LIMIT 10 `;
+    const query = `SELECT username,user_id,img FROM users WHERE username LIKE ?  LIMIT 10 `;
     connection.query(query, [`%${username}%`], (err, result) => {
         if (err) {
             console.log(err);
@@ -232,7 +233,7 @@ const searchUsers = (req, res) => {
 
 const getUser = (req, res) => {
     const user_id = req.params.user_id;
-    const query = 'SELECT username,img,user_id FROM Users WHERE user_id = ?';
+    const query = 'SELECT username,img,user_id FROM users WHERE user_id = ?';
     connection.query(query, [user_id], (err, result) => {
         if (err) {
             console.log(err);
@@ -245,7 +246,7 @@ const getUser = (req, res) => {
 
 const removeDeviceToken = (req, res) => {
     const user_id = req.body.user_id;
-    const query = 'UPDATE Users SET deviceToken = ? WHERE user_id = ?';
+    const query = 'UPDATE users SET deviceToken = ? WHERE user_id = ?';
     connection.query(query, ['', user_id], (err, result) => {
         if (err) {
             console.log(err);
