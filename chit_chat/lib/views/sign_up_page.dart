@@ -46,7 +46,7 @@ class SignUpPage extends GetView<UserController> {
             if (status) {
               Get.put(ConversationController(conversationRepo: Get.find()));
               print("Success registration");
-              Get.offAndToNamed(RouteHelper.getHomePage());
+              Get.toNamed(RouteHelper.getHomePage());
             } else {
               showCustomSnackBar("Already registered");
             }

@@ -144,6 +144,8 @@ class UserController extends GetxController {
   Future<void> logout() async {
     await clearDeviceToken();
     _userModel = null;
+    _image = null;
+    _searchedUsersList = [];
     await userRepo.clearStorage();
   }
 
