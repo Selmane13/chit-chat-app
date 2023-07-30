@@ -22,6 +22,7 @@ class InfoPage extends GetView<UserController> {
 
   @override
   Widget build(BuildContext context) {
+    print(controller.searchedUsersList[controller.currSearchedUser]["img"]);
     return Scaffold(
         appBar: AppBar(
           title: const Text('Information'),
@@ -29,7 +30,7 @@ class InfoPage extends GetView<UserController> {
           backgroundColor: Color(0xff8640DF),
           leading: GestureDetector(
               onTap: () async {
-                if(Get.previousRoute == RouteHelper.getConversationPage()){
+                if (Get.previousRoute == RouteHelper.getConversationPage()) {
                   controller.searchedUsersList.clear();
                 }
                 Get.back();
@@ -87,10 +88,10 @@ class InfoPage extends GetView<UserController> {
           ),
           GestureDetector(
             onTap: () async {
-              if(Get.previousRoute == RouteHelper.getConversationPage()){
+              if (Get.previousRoute == RouteHelper.getConversationPage()) {
                 controller.searchedUsersList.clear();
                 Get.back();
-              }else{
+              } else {
                 List<ConversationModel> conversations =
                     Get.find<ConversationController>().conversations;
 
@@ -99,10 +100,12 @@ class InfoPage extends GetView<UserController> {
                 while (i < conversations.length && !done) {
                   for (var participant in conversations[i].partcipants) {
                     if (participant.user_id! ==
-                        controller.searchedUsersList[controller.currSearchedUser]
-                        ["user_id"]
+                        controller
+                            .searchedUsersList[controller.currSearchedUser]
+                                ["user_id"]
                             .toString()) {
-                      Get.find<ConversationController>().currConversation = i - 1;
+                      Get.find<ConversationController>().currConversation =
+                          i - 1;
                       done = true;
                     }
                     i++;
@@ -112,23 +115,21 @@ class InfoPage extends GetView<UserController> {
                   print(done);
                   String? convId = await Get.find<ConversationController>()
                       .newConversation(
-                      controller.userModel.user_id,
-                      controller
-                          .searchedUsersList[controller.currSearchedUser]
-                      ["user_id"]
-                          .toString(),
-                      controller
-                          .searchedUsersList[controller.currSearchedUser]
-                      ["username"]);
+                          controller.userModel.user_id,
+                          controller
+                              .searchedUsersList[controller.currSearchedUser]
+                                  ["user_id"]
+                              .toString(),
+                          controller.searchedUsersList[
+                              controller.currSearchedUser]["username"]);
                   await _loadData();
                   Get.find<ConversationController>().currConversation =
-                  Get.find<ConversationController>()
-                      .findConversation(convId!)!;
+                      Get.find<ConversationController>()
+                          .findConversation(convId!)!;
                   Get.offAndToNamed(RouteHelper.getConversationPage());
                   done = true;
                 }
               }
-
             },
             child: AccountWidget(
                 icon: Icons.message,

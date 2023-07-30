@@ -47,7 +47,7 @@ class _SignInPageState extends State<SignInPage> {
           Get.find<UserController>().signIn(email, password).then((status) {
             if (status) {
               Get.put(ConversationController(conversationRepo: Get.find()));
-              Get.toNamed(RouteHelper.getHomePage());
+              Get.offAndToNamed(RouteHelper.getHomePage());
             } else {
               showCustomSnackBar("Wrong credentials");
             }
