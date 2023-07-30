@@ -43,12 +43,10 @@ const insertMssgDB = (data) => {
 
 const getMssg = (req, res) => {
     const message_id = req.params.message_id;
-    console.log(req.params.message_id);
     const query = 'SELECT * FROM messages WHERE message_id =  ?';
     userController.connection.query(query, message_id, (err, result) => {
         if (err) {
             console.log(err);
-
         } else {
             res.send(result);
         }

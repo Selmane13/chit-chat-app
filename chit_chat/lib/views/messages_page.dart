@@ -36,6 +36,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final FocusNode focusNode = FocusNode();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xff8640DF),
@@ -96,6 +97,7 @@ class _MessagesPageState extends State<MessagesPage> {
                               color: Colors.grey.withOpacity(0.2))
                         ]),
                     child: TextField(
+                      focusNode: focusNode,
                       cursorColor: Colors.black,
                       decoration: InputDecoration(
                           focusedBorder: OutlineInputBorder(
@@ -124,6 +126,9 @@ class _MessagesPageState extends State<MessagesPage> {
                               left: Dimensions.height10 / 2)),
                       onChanged: (value) async {
                         await Get.find<UserController>().searchUsers(value);
+                      },
+                      onTapOutside: (event) {
+                        focusNode.unfocus();
                       },
                     ),
                   ),
@@ -330,16 +335,39 @@ class _MessagesPageState extends State<MessagesPage> {
                                 Get.toNamed(RouteHelper.getInfoPage());
                               },
                               child: MessageWidget(
-                                  username: _userController
-                                      .searchedUsersList[index]['username'],
-                                  message: "",
-                                  date: ""),
+                                username: _userController
+                                    .searchedUsersList[index]['username'],
+                                message: "",
+                                date: "",
+                                image: _userController.searchedUsersList[index]
+                                            ['img'] !=
+                                        null
+                                    ? AppConstants.BASE_URL +
+                                        "/" +
+                                        _userController.searchedUsersList[index]
+                                            ['img']
+                                    : null,
+                              ),
                             );
                           }),
                     )
-                  : !Get.find<ConversationController>().loading
-                      ? Container()
-                      : Container();
+                  : GetBuilder<ConversationController>(
+                      builder: (_convController) {
+                      return !Get.find<ConversationController>()
+                              .conversations
+                              .isEmpty
+                          ? Container()
+                          : Container(
+                              width: Dimensions.screenWidth,
+                              child: const Center(
+                                child: Text(
+                                  "No messages",
+                                  style: TextStyle(
+                                      fontSize: 30, color: Colors.grey),
+                                ),
+                              ),
+                            );
+                    });
             }),
           )
         ],

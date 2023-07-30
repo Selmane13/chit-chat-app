@@ -32,15 +32,16 @@ class RouteHelper {
     GetPage(
         name: conversationPage,
         page: () => ConversationPage(),
-        transition: Transition.rightToLeft),
+        transition: Transition.rightToLeft,
+        transitionDuration: Duration(milliseconds: 100)),
     GetPage(
-      name: editPage,
-      page: () {
-        final String pageArgument = Get.parameters['page']!;
-        return EditPage(page: pageArgument);
-      },
-      transition: Transition.rightToLeft,
-    ),
+        name: editPage,
+        page: () {
+          final String pageArgument = Get.parameters['page']!;
+          return EditPage(page: pageArgument);
+        },
+        transition: Transition.rightToLeft,
+        transitionDuration: Duration(milliseconds: 100)),
     GetPage(name: infoPage, page: () => InfoPage())
   ];
 }

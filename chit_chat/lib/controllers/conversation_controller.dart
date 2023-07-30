@@ -45,7 +45,6 @@ class ConversationController extends GetxController {
   Future<bool> getAllConversations() async {
     Response response = await conversationRepo.getAllConversations(
         {"user_id": Get.find<UserController>().userModel.user_id});
-    print(response.statusCode);
     if (response.statusCode == 200) {
       _conversations = [];
       for (int i = 0; i < response.body.length; i++) {
@@ -162,12 +161,17 @@ class ConversationController extends GetxController {
       unsortedMessages = [];
     }
 
-    conversations.sort((a, b) {
-      final DateTime timestampA =
-          DateTime.parse(a.sortedMessages.last.timestamp!);
-      final DateTime timestampB =
-          DateTime.parse(b.sortedMessages.last.timestamp!);
-      return timestampB.compareTo(timestampA); // Sort in descending order
+    _conversations.sort((a, b) {
+      if (a.sortedMessages.isNotEmpty && b.sortedMessages.isNotEmpty) {
+        final DateTime timestampA =
+            DateTime.parse(a.sortedMessages.last.timestamp!);
+        final DateTime timestampB =
+            DateTime.parse(b.sortedMessages.last.timestamp!);
+        return timestampB.compareTo(timestampA);
+      } else {
+        return 1;
+      }
+      // Sort in descending order
     });
   }
 
@@ -214,6 +218,7 @@ class ConversationController extends GetxController {
   }
 
   Future<void> deleteConversation(String conversationId, int index) async {
+    print(conversationId);
     Response response =
         await conversationRepo.deleteConversation(conversationId);
     if (response.statusCode == 200) {
@@ -222,6 +227,7 @@ class ConversationController extends GetxController {
       update();
       print("conversation deleted succefully");
     } else {
+      update();
       print("err in deleteConversation ${response.statusText}");
     }
   }
@@ -237,6 +243,7 @@ class ConversationController extends GetxController {
       update();
       print("message deleted succefully");
     } else {
+      update();
       print("err in deleteConversation ${response.statusText}");
     }
   }
@@ -248,6 +255,7 @@ class ConversationController extends GetxController {
   @override
   void onInit() async {
     _loading = false;
+    update();
     super.onInit();
     await getAllConversations();
     await getParticipantsOfAllConversation();

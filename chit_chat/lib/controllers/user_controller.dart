@@ -112,6 +112,7 @@ class UserController extends GetxController {
     Response response = await userRepo.editUsername(username);
     if (response.statusCode == 200) {
       userModel.username = username;
+      update();
       return true;
     } else {
       return false;
@@ -122,6 +123,7 @@ class UserController extends GetxController {
     Response response = await userRepo.editEmail(email);
     if (response.statusCode == 200) {
       userModel.email = email;
+      update();
       return true;
     } else {
       return false;
@@ -132,6 +134,7 @@ class UserController extends GetxController {
     Response response = await userRepo.editPhone(phone);
     if (response.statusCode == 200) {
       userModel.phone = phone;
+      update();
       return true;
     } else {
       return false;

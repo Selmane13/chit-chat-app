@@ -1,6 +1,7 @@
 import 'package:chit_chat/controllers/conversation_controller.dart';
 import 'package:chit_chat/controllers/user_controller.dart';
 import 'package:chit_chat/views/sign_up_page.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -22,30 +23,36 @@ class _SignInPageState extends State<SignInPage> {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
 
-    void _login() {
-      String password = passwordController.text.trim();
-      String email = emailController.text.trim();
-
-      if (email.isEmpty) {
-        showCustomSnackBar("Type in your email address",
-            title: "Email address");
-      } else if (!GetUtils.isEmail(email)) {
-        showCustomSnackBar("Type in a valid email address",
-            title: "Valid email address");
-      } else if (password.isEmpty) {
-        showCustomSnackBar("Type in your password", title: "Password");
-      } else if (password.length < 0) {
-        showCustomSnackBar("Password can not be less than six chacarcters",
-            title: "Password");
+    void _login() async {
+      final connectivityResult = await Connectivity().checkConnectivity();
+      if (connectivityResult == ConnectivityResult.none) {
+        showCustomSnackBar("Connection problem",
+            title: "No internet connection");
       } else {
-        Get.find<UserController>().signIn(email, password).then((status) {
-          if (status) {
-            Get.put(ConversationController(conversationRepo: Get.find()));
-            Get.toNamed(RouteHelper.getHomePage());
-          } else {
-            showCustomSnackBar("Wrong credentials");
-          }
-        });
+        String password = passwordController.text.trim();
+        String email = emailController.text.trim();
+
+        if (email.isEmpty) {
+          showCustomSnackBar("Type in your email address",
+              title: "Email address");
+        } else if (!GetUtils.isEmail(email)) {
+          showCustomSnackBar("Type in a valid email address",
+              title: "Valid email address");
+        } else if (password.isEmpty) {
+          showCustomSnackBar("Type in your password", title: "Password");
+        } else if (password.length < 0) {
+          showCustomSnackBar("Password can not be less than six chacarcters",
+              title: "Password");
+        } else {
+          Get.find<UserController>().signIn(email, password).then((status) {
+            if (status) {
+              Get.put(ConversationController(conversationRepo: Get.find()));
+              Get.toNamed(RouteHelper.getHomePage());
+            } else {
+              showCustomSnackBar("Wrong credentials");
+            }
+          });
+        }
       }
     }
 
@@ -178,7 +185,7 @@ class _SignInPageState extends State<SignInPage> {
                             decoration: InputDecoration(
                                 hintText: "password",
                                 prefixIcon: const Icon(
-                                  Icons.email,
+                                  Icons.password_rounded,
                                   color: Colors.deepPurple,
                                 ),
                                 focusedBorder: OutlineInputBorder(
@@ -200,25 +207,36 @@ class _SignInPageState extends State<SignInPage> {
                         SizedBox(
                           height: Dimensions.height20 * 2,
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            _login();
-                          },
-                          child: Container(
-                            width: Dimensions.height10 * 15,
-                            height: Dimensions.height10 * 6,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(
-                                    Dimensions.height10 * 1.5),
-                                color: Colors.deepPurple),
-                            child: Center(
-                                child: Text(
-                              "Sign in",
-                              style: TextStyle(
-                                  fontSize: Dimensions.height10 * 1.7,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
-                            )),
+                        Container(
+                          width: Dimensions.height10 * 15,
+                          height: Dimensions.height10 * 6,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(
+                                  Dimensions.height10 * 1.5),
+                              color: Colors.deepPurple),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () async {
+                                _login();
+                              },
+                              child: Container(
+                                width: Dimensions.height10 * 15,
+                                height: Dimensions.height10 * 6,
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(
+                                        Dimensions.height10 * 1.5),
+                                    color: Colors.transparent),
+                                child: Center(
+                                    child: Text(
+                                  "Sign in",
+                                  style: TextStyle(
+                                      fontSize: Dimensions.height10 * 1.7,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white),
+                                )),
+                              ),
+                            ),
                           ),
                         ),
                         SizedBox(

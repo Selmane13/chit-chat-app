@@ -1,5 +1,6 @@
 import 'package:chit_chat/controllers/user_controller.dart';
 import 'package:chit_chat/utils/Dimensions.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -17,34 +18,40 @@ class SignUpPage extends GetView<UserController> {
     final passwordController = TextEditingController();
     final nameController = TextEditingController();
 
-    void _registration() {
-      String name = nameController.text.trim();
-      String password = passwordController.text.trim();
-      String email = emailController.text.trim();
-
-      if (name.isEmpty) {
-        showCustomSnackBar("Type in your name", title: "Name");
-      } else if (email.isEmpty) {
-        showCustomSnackBar("Type in your email address",
-            title: "Email address");
-      } else if (!GetUtils.isEmail(email)) {
-        showCustomSnackBar("Type in a valid email address",
-            title: "Valid email address");
-      } else if (password.isEmpty) {
-        showCustomSnackBar("Type in your password", title: "Password");
-      } else if (password.length < 6) {
-        showCustomSnackBar("Password can not be less than six chacarcters",
-            title: "Password");
+    void _registration() async {
+      final connectivityResult = await Connectivity().checkConnectivity();
+      if (connectivityResult == ConnectivityResult.none) {
+        showCustomSnackBar("Connection problem",
+            title: "No internet connection");
       } else {
-        controller.signUp(name, password, email).then((status) {
-          if (status) {
-            Get.put(ConversationController(conversationRepo: Get.find()));
-            print("Success registration");
-            Get.toNamed(RouteHelper.getHomePage());
-          } else {
-            showCustomSnackBar("Already registered");
-          }
-        });
+        String name = nameController.text.trim();
+        String password = passwordController.text.trim();
+        String email = emailController.text.trim();
+
+        if (name.isEmpty) {
+          showCustomSnackBar("Type in your name", title: "Name");
+        } else if (email.isEmpty) {
+          showCustomSnackBar("Type in your email address",
+              title: "Email address");
+        } else if (!GetUtils.isEmail(email)) {
+          showCustomSnackBar("Type in a valid email address",
+              title: "Valid email address");
+        } else if (password.isEmpty) {
+          showCustomSnackBar("Type in your password", title: "Password");
+        } else if (password.length < 6) {
+          showCustomSnackBar("Password can not be less than six chacarcters",
+              title: "Password");
+        } else {
+          controller.signUp(name, password, email).then((status) {
+            if (status) {
+              Get.put(ConversationController(conversationRepo: Get.find()));
+              print("Success registration");
+              Get.toNamed(RouteHelper.getHomePage());
+            } else {
+              showCustomSnackBar("Already registered");
+            }
+          });
+        }
       }
     }
 
@@ -147,7 +154,7 @@ class SignUpPage extends GetView<UserController> {
                         decoration: InputDecoration(
                             hintText: "password",
                             prefixIcon: const Icon(
-                              Icons.email,
+                              Icons.password_rounded,
                               color: Colors.deepPurple,
                             ),
                             focusedBorder: OutlineInputBorder(
@@ -190,7 +197,7 @@ class SignUpPage extends GetView<UserController> {
                         decoration: InputDecoration(
                             hintText: "Name",
                             prefixIcon: const Icon(
-                              Icons.email,
+                              Icons.person,
                               color: Colors.deepPurple,
                             ),
                             focusedBorder: OutlineInputBorder(
@@ -212,25 +219,36 @@ class SignUpPage extends GetView<UserController> {
                     SizedBox(
                       height: Dimensions.height20,
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        _registration();
-                      },
-                      child: Container(
-                        width: Dimensions.height10 * 15,
-                        height: Dimensions.height10 * 6,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
-                                Dimensions.height10 * 1.5),
-                            color: Colors.deepPurple),
-                        child: Center(
-                            child: Text(
-                          "Sign up",
-                          style: TextStyle(
-                              fontSize: Dimensions.height10 * 1.7,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
-                        )),
+                    Container(
+                      width: Dimensions.height10 * 15,
+                      height: Dimensions.height10 * 6,
+                      decoration: BoxDecoration(
+                          borderRadius:
+                              BorderRadius.circular(Dimensions.height10 * 1.5),
+                          color: Colors.deepPurple),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () async {
+                            _registration();
+                          },
+                          child: Container(
+                            width: Dimensions.height10 * 15,
+                            height: Dimensions.height10 * 6,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(
+                                    Dimensions.height10 * 1.5),
+                                color: Colors.transparent),
+                            child: Center(
+                                child: Text(
+                              "Sign up",
+                              style: TextStyle(
+                                  fontSize: Dimensions.height10 * 1.7,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
+                            )),
+                          ),
+                        ),
                       ),
                     ),
                     SizedBox(

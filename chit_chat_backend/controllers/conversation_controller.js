@@ -135,7 +135,7 @@ const deleteConversation = (req, res) => {
                     res.status(500).json({ error: 'Internal server error' });
                 } else {
                     // Delete the conversation
-                    const deleteConversationQuery = 'DELETE FROM conversationss WHERE conversation_id = ?';
+                    const deleteConversationQuery = 'DELETE FROM conversations WHERE conversation_id = ?';
                     userController.connection.query(deleteConversationQuery, conversation_id, (err, result) => {
                         if (err) {
                             console.log(err);
