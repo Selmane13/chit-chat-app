@@ -171,7 +171,7 @@ app.post('/account/updateImg', upload.single('img'), (req, res) => {
     if (!req.file) {
         res.status(400).send({ "error": 'No file uploaded' });
     } else {
-        const query = "UPDATE Users SET img = ? WHERE user_id = ?"
+        const query = "UPDATE users SET img = ? WHERE user_id = ?"
         userController.connection.query(query, [req.file.path, req.body.user_id], (err, result) => {
             if (err) {
                 console.log(err);
